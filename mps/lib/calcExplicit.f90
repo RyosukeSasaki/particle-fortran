@@ -79,3 +79,50 @@ subroutine moveParticleExplicit()
   Acc = 0d0
 
 end
+
+subroutine collision()
+  use define
+  use consts_variables
+  implicit none
+  real*8, parameter :: e = 0.2
+  real*8 :: distance
+  real*8 :: calcDistance
+  real*8 :: impulse
+  real*8 :: VelocityAfterCollision(NumberOfParticle, numDimension)
+  real*8 :: deltaIJ(numDimension)
+  integer :: i, j, k
+
+  VelocityAfterCollision = Vel
+  do i = 1, NumberOfParticle
+    if (ParticleType(i) .ne. PARTICLE_FLUID) cycle
+    do j = 1, NumberOfParticle
+      if (ParticleType(j) == PARTICLE_DUMMY) cycle
+      if (i == j) cycle
+      do k = 1, numDimension
+        deltaIJ(k) = Pos(j, k) - Pos(i, k)
+      enddo
+      distance = sqrt(sum(deltaIJ))
+      if (distance < collisionDistance) then
+        impulse = 0d0
+        do k = 1, numDimension
+          impulse = impulse + (Vel(i, k) - Vel(j, k))*deltaIJ(k)/distance
+        enddo
+        if (impulse > 0d0) then
+          impulse = impulse*(1 + e)/2
+          do k = 1, numDimension
+            VelocityAfterCollision(i, k) = VelocityAfterCollision(i, k) - impulse*deltaIJ(k)/distance
+          enddo
+        endif
+      endif
+    enddo
+  enddo
+
+  do i = i, NumberOfParticle
+    if (ParticleType(i) .ne. PARTICLE_FLUID) cycle
+    do j = 1, numDimension
+      Pos(i, j) = Pos(i, j) + (VelocityAfterCollision(i, j) - Vel(i, j))*dt
+      Vel(i, j) = VelocityAfterCollision(i, j)
+    enddo
+  enddo
+
+end

@@ -69,6 +69,7 @@ subroutine InitParticles()
   allocate (SourceTerm(NumberOfParticle))
   allocate (CoefficientMatrix(NumberOfParticle, NumberOfParticle))
   allocate (Pressure(NumberOfParticle))
+  allocate (MinPressure(NumberOfParticle))
   Vel = 0d0
   Acc = 0d0
   Pressure = 0d0

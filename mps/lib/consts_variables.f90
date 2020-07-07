@@ -27,6 +27,7 @@ module consts_variables
   real*8, allocatable :: Vel(:, :)
   real*8, allocatable :: Acc(:, :)
   real*8, allocatable :: Pressure(:)
+  real*8, allocatable :: MinPressure(:)
   real*8, allocatable :: NumberDensity(:)
   real*8, allocatable :: BoundaryCondition(:)
   real*8, allocatable :: SourceTerm(:)

@@ -116,9 +116,13 @@ subroutine GaussEliminateMethod()
     if (i == 0) exit
     if (BoundaryCondition(i) .ne. BOUNDARY_INNER) cycle
     Terms = 0d0
+!$omp parallel
+!$omp do reduction(+:Terms)
     do j = i + 1, NumberOfParticle
       Terms = Terms + CoefficientMatrix(i, j)*Pressure(j)
     enddo
+!$omp end do
+!$omp end parallel
     Pressure(i) = (SourceTerm(i) - Terms)/CoefficientMatrix(i, i)
   enddo
 
@@ -179,6 +183,30 @@ subroutine removeNegativePressure()
 
 end
 
+subroutine setMinPressure()
+  use define
+  use consts_variables
+  implicit none
+  real*8 :: distance
+  real*8 :: calcDistance
+  integer :: i, j
+
+  do i = 1, NumberOfParticle
+    if (ParticleType(i) == PARTICLE_DUMMY) cycle
+    MinPressure(i) = Pressure(i)
+    do j = 1, NumberOfParticle
+      if (ParticleType(j) == PARTICLE_DUMMY) cycle
+      if (i == j) cycle
+      distance = calcDistance(i, j)
+      if (distance >= Radius_forGradient) cycle
+      if (MinPressure(i) > Pressure(j)) then
+        MinPressure(i) = Pressure(j)
+      endif
+    enddo
+  enddo
+
+end
+
 subroutine calcPressureGradient()
   !圧力勾配の計算
   use define
@@ -207,7 +235,7 @@ subroutine calcPressureGradient()
       distance = sqrt(distance2)
       if (distance < Radius_forGradient) then
         weight = calcWeight(distance, Radius_forGradient)
-        pIJ = (Pressure(j) - Pressure(i))/distance2
+        pIJ = (Pressure(j) - MinPressure(i))/distance2
         do k = 1, numDimension
           gradient(k) = gradient(k) + deltaIJ(k)*pIJ*weight
         enddo
