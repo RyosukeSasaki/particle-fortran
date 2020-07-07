@@ -23,7 +23,7 @@ module consts_variables
   real*8 :: Gravity(numDimension)
   ! 0:Fluid, 1:Wall, 2:Dummy
   real*8 :: ParticleType(MaxNumberOfParticle)
-  data Gravity/0d0, 9.8/
+  data Gravity/0d0, -9.8/
   real*8, allocatable :: Vel(:, :)
   real*8, allocatable :: Acc(:, :)
   real*8, allocatable :: Pressure(:)

@@ -4,7 +4,7 @@ program main
   integer :: i, j
 
   call InitParticles()
-  do j = 1, 1
+  do j = 1, 1000
     call calcConsts()
     call calcGravity()
     call calcViscosity()
@@ -13,13 +13,14 @@ program main
     call setBoundaryCondition()
     call setSourceTerm()
     call setMatrix()
-    call GaussSeidelMethod()
+!    call GaussSeidelMethod()
+    call GaussEliminateMethod()
     call removeNegativePressure()
     call calcPressureGradient()
     call moveParticleImplicit()
   enddo
   do i = 1, NumberOfParticle
-!    write (*, *) Pos(i, 1), Pos(i, 2), ParticleType(i)
+    write (*, *) Pos(i, 1), Pos(i, 2), ParticleType(i)
   enddo
 
 end

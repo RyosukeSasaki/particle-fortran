@@ -87,12 +87,39 @@ subroutine setMatrix()
     enddo
     CoefficientMatrix(i, i) = CoefficientMatrix(i, i) + COMPRESSIBILITY/(dt**2)
   enddo
-  do i = 1, NumberOfParticle
-    if (CoefficientMatrix(i, i) == 0) then
-      write (*, *) "hoge"
-    else
-      write (*, *) "huga"
-    endif
+
+end
+
+subroutine GaussEliminateMethod()
+  use define
+  use consts_variables
+  implicit none
+  real*8 :: Terms, c
+  integer :: i, j, k
+
+  Pressure = 0d0
+  do i = 1, NumberOfParticle - 1
+    if (BoundaryCondition(i) .ne. BOUNDARY_INNER) cycle
+    do j = i + 1, NumberOfParticle
+      if (BoundaryCondition(j) == BOUNDARY_DUMMY) cycle
+      c = CoefficientMatrix(j, i)/CoefficientMatrix(i, i)
+      do k = i + 1, NumberOfParticle
+        CoefficientMatrix(j, k) = CoefficientMatrix(j, k) - c*CoefficientMatrix(i, k)
+      enddo
+      SourceTerm(j) = SourceTerm(j) - c*SourceTerm(i)
+    enddo
+  enddo
+
+  i = NumberOfParticle
+  do
+    i = i - 1
+    if (i == 0) exit
+    if (BoundaryCondition(i) .ne. BOUNDARY_INNER) cycle
+    Terms = 0d0
+    do j = i + 1, NumberOfParticle
+      Terms = Terms + CoefficientMatrix(i, j)*Pressure(j)
+    enddo
+    Pressure(i) = (SourceTerm(i) - Terms)/CoefficientMatrix(i, i)
   enddo
 
 end
