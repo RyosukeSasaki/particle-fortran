@@ -1,15 +1,25 @@
 program main
+  use consts_variables
   implicit none
-  integer, parameter :: MaxNumberOfParticle = 5000
-  real*8, parameter :: PARTICLE_DISTANCE = 0.025
-  integer :: NumberOfParticle
-  real*8 :: Pos(MaxNumberOfParticle, 2)
-  real*8 :: Vel(MaxNumberOfParticle, 2), ParticleType(MaxNumberOfParticle)
-  integer :: i
+  integer :: i, j
 
-  call InitParticle(MaxNumberOfParticle, NumberOfParticle, Pos, Vel, ParticleType, PARTICLE_DISTANCE)
+  call InitParticles()
+  do j = 1, 1
+    call calcConsts()
+    call calcGravity()
+    call calcViscosity()
+    call moveParticleExplicit()
+    call calcNumberDensity()
+    call setBoundaryCondition()
+    call setSourceTerm()
+    call setMatrix()
+    call GaussSeidelMethod()
+    call removeNegativePressure()
+    call calcPressureGradient()
+    call moveParticleImplicit()
+  enddo
   do i = 1, NumberOfParticle
-    write (*, *) Pos(i, 1), Pos(i, 2), ParticleType(i)
+!    write (*, *) Pos(i, 1), Pos(i, 2), ParticleType(i)
   enddo
 
 end

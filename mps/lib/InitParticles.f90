@@ -1,10 +1,8 @@
-subroutine InitParticle(MaxNumberOfParticle, NumberOfParticle, Pos, Vel, ParticleType, PARTICLE_DISTANCE)
+subroutine InitParticles()
+  !粒子の初期値設定
+  use define
+  use consts_variables
   implicit none
-  integer, intent(in) :: MaxNumberOfParticle
-  integer, intent(out) :: NumberOfParticle
-  real*8, intent(inout) :: Pos(MaxNumberOfParticle, 2)
-  real*8, intent(inout) :: Vel(MaxNumberOfParticle, 2), ParticleType(MaxNumberOfParticle)
-  real*8, intent(in) :: PARTICLE_DISTANCE
   real*8 :: x, y
   real*8 :: EPS
   integer :: iX, iY
@@ -17,28 +15,28 @@ subroutine InitParticle(MaxNumberOfParticle, NumberOfParticle, Pos, Vel, Particl
   nY = int(0.6/PARTICLE_DISTANCE) + 5
   do iX = -4, nX
     do iY = -4, nY
-      x = PARTICLE_DISTANCE*iX
-      y = PARTICLE_DISTANCE*iY
+      x = PARTICLE_DISTANCE*dble(iX)
+      y = PARTICLE_DISTANCE*dble(iY)
       flagOfParticleGenerarion = .false.
 
       !dummy particle
       if (((x > -4*PARTICLE_DISTANCE + EPS) .and. (x <= 1d0 + 4*PARTICLE_DISTANCE + EPS)) &
           .and. ((y > 0d0 - 4*PARTICLE_DISTANCE + EPS) .and. (y <= 0.6 + EPS))) then
-        ParticleType(i) = 2
+        ParticleType(i) = PARTICLE_DUMMY
         flagOfParticleGenerarion = .true.
       endif
 
       !wall particle
       if (((x > -2*PARTICLE_DISTANCE + EPS) .and. (x <= 1d0 + 2*PARTICLE_DISTANCE + EPS)) &
           .and. ((y > 0d0 - 2*PARTICLE_DISTANCE + EPS) .and. (y <= 0.6 + EPS))) then
-        ParticleType(i) = 1
+        ParticleType(i) = PARTICLE_WALL
         flagOfParticleGenerarion = .true.
       endif
 
       !wall particle
       if (((x > -4*PARTICLE_DISTANCE + EPS) .and. (x <= 1d0 + 4*PARTICLE_DISTANCE + EPS)) &
           .and. ((y > 0.6 - 2*PARTICLE_DISTANCE + EPS) .and. (y <= 0.6 + EPS))) then
-        ParticleType(i) = 1
+        ParticleType(i) = PARTICLE_WALL
         flagOfParticleGenerarion = .true.
       endif
 
@@ -49,14 +47,13 @@ subroutine InitParticle(MaxNumberOfParticle, NumberOfParticle, Pos, Vel, Particl
 
       !fluid particle
       if (((x > 0d0 + EPS) .and. (x <= 0.25 + EPS)) .and. ((y > 0d0 + EPS) .and. (y <= 0.5 + EPS))) then
-        ParticleType(i) = 0
+        ParticleType(i) = PARTICLE_FLUID
         flagOfParticleGenerarion = .true.
       endif
 
       !generate position and velocity
       if (flagOfParticleGenerarion .eqv. .true.) then
         Pos(i, 1) = x; Pos(i, 2) = y
-        Vel(i, 1) = 0d0; Vel(i, 2) = 0d0
         i = i + 1
       endif
 
@@ -64,6 +61,18 @@ subroutine InitParticle(MaxNumberOfParticle, NumberOfParticle, Pos, Vel, Particl
   enddo
 
   NumberOfParticle = i - 1
+  !allocate memory for particle quantities
+  allocate (Vel(NumberOfParticle, numDimension))
+  allocate (Acc(NumberOfParticle, numDimension))
+  allocate (NumberDensity(NumberOfParticle))
+  allocate (BoundaryCondition(NumberOfParticle))
+  allocate (SourceTerm(NumberOfParticle))
+  allocate (CoefficientMatrix(NumberOfParticle, NumberOfParticle))
+  allocate (Pressure(NumberOfParticle))
+  Vel = 0d0
+  Acc = 0d0
+  Pressure = 0d0
+
   return
 
 end
