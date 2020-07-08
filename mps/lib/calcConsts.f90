@@ -23,6 +23,7 @@ subroutine calcNZeroLambda()
   N0_forNumberDensity = 0d0
   N0_forGradient = 0d0
   N0_forLaplacian = 0d0
+  Lambda = 0d0
 
   do iX = -4, 4
     do iY = -4, 4

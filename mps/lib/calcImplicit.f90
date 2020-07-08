@@ -1,5 +1,6 @@
 subroutine calcNumberDensity()
   !粒子数密度の計算
+  use define
   use consts_variables
   implicit none
   real*8 :: distance, weight
@@ -8,7 +9,9 @@ subroutine calcNumberDensity()
 
   NumberDensity = 0d0
   do i = 1, NumberOfParticle
+    if (ParticleType(i) == PARTICLE_DUMMY) cycle
     do j = 1, NumberOfParticle
+      if (ParticleType(j) == PARTICLE_DUMMY) cycle
       if (i == j) cycle
       distance = calcDistance(i, j)
       weight = calcWeight(distance, Radius_forNumberDensity)
@@ -25,19 +28,19 @@ subroutine setBoundaryCondition()
   implicit none
   integer :: i
 
-!$omp parallel
-!$omp do
+  !$omp parallel
+  !$omp do
   do i = 1, NumberOfParticle
-    if (ParticleType(i) == PARTICLE_DUMMY) then
-      BoundaryCondition(i) = BOUNDARY_DUMMY
-    elseif (NumberDensity(i) < THRESHOLD_RATIO_BETA*N0_forNumberDensity) then
-      BoundaryCondition(i) = BOUNDARY_SURFACE
-    else
-      BoundaryCondition(i) = BOUNDARY_INNER
-    endif
+  if (ParticleType(i) == PARTICLE_DUMMY) then
+    BoundaryCondition(i) = BOUNDARY_DUMMY
+  elseif (NumberDensity(i) < THRESHOLD_RATIO_BETA*N0_forNumberDensity) then
+    BoundaryCondition(i) = BOUNDARY_SURFACE
+  else
+    BoundaryCondition(i) = BOUNDARY_INNER
+  endif
   enddo
-!$omp end do
-!$omp end parallel
+  !$omp end do
+  !$omp end parallel
 
 end
 
@@ -49,16 +52,19 @@ subroutine setSourceTerm()
   integer :: i
 
   SourceTerm = 0d0
-!$omp parallel
-!$omp do
+  !$omp parallel
+  !$omp do
   do i = 1, NumberOfParticle
+    if (ParticleType(i) == PARTICLE_DUMMY) cycle
     if (BoundaryCondition(i) == BOUNDARY_INNER) then
       SourceTerm(i) = RELAXATION_COEF_FOR_PRESSURE*(1d0/dt**2)* &
                       (NumberDensity(i) - N0_forNumberDensity)/N0_forNumberDensity
+    elseif (BoundaryCondition(i) == BOUNDARY_SURFACE) then
+      SourceTerm(i) = 0d0
     endif
   enddo
-!$omp end do
-!$omp end parallel
+  !$omp end do
+  !$omp end parallel
 
 end
 
@@ -116,13 +122,13 @@ subroutine GaussEliminateMethod()
     if (i == 0) exit
     if (BoundaryCondition(i) .ne. BOUNDARY_INNER) cycle
     Terms = 0d0
-!$omp parallel
-!$omp do reduction(+:Terms)
+    !$omp parallel
+    !$omp do reduction(+:Terms)
     do j = i + 1, NumberOfParticle
       Terms = Terms + CoefficientMatrix(i, j)*Pressure(j)
     enddo
-!$omp end do
-!$omp end parallel
+    !$omp end do
+    !$omp end parallel
     Pressure(i) = (SourceTerm(i) - Terms)/CoefficientMatrix(i, i)
   enddo
 
@@ -137,32 +143,32 @@ subroutine GaussSeidelMethod()
   real*8 :: x, bnorm, val
 
   bnorm = 0d0
-!$omp parallel
-!$omp do reduction(+:bnorm)
+  !$omp parallel
+  !$omp do reduction(+:bnorm)
   do i = 1, NumberOfParticle
     bnorm = bnorm + SourceTerm(i)**2
   enddo
-!$omp end do
-!$omp end parallel
+  !$omp end do
+  !$omp end parallel
   bnorm = sqrt(bnorm)
 
   Pressure = 0d0
   do iter = 1, NumberOfParticle*10
-    do i = 1, NumberOfParticle
-      x = SourceTerm(i)
-!$omp parallel
-!$omp do reduction(-:x)
-      do j = 1, NumberOfParticle
-        if (i == j) cycle
-        x = x - CoefficientMatrix(i, j)*Pressure(i)
-      enddo
-!$omp end do
-!$omp end parallel
-      val = val + x**2
-      Pressure(i) = x/CoefficientMatrix(i, i)
+  do i = 1, NumberOfParticle
+    x = SourceTerm(i)
+    !$omp parallel
+    !$omp do reduction(-:x)
+    do j = 1, NumberOfParticle
+      if (i == j) cycle
+      x = x - CoefficientMatrix(i, j)*Pressure(i)
     enddo
-    val = sqrt(val)/bnorm
-    if (val < eps) exit
+    !$omp end do
+    !$omp end parallel
+    val = val + x**2
+    Pressure(i) = x/CoefficientMatrix(i, i)
+  enddo
+  val = sqrt(val)/bnorm
+  if (val < eps) exit
   enddo
 end
 
@@ -173,13 +179,9 @@ subroutine removeNegativePressure()
   implicit none
   integer ::i
 
-!$omp parallel
-!$omp do
   do i = 1, NumberOfParticle
     Pressure(i) = Max(Pressure(i), 0d0)
   enddo
-!$omp end do
-!$omp end parallel
 
 end
 
@@ -219,8 +221,8 @@ subroutine calcPressureGradient()
   real*8 :: gradient(numDimension)
   integer :: i, j, k
 
-!$omp parallel private(gradient, distance, distance2, weight, deltaIJ, pIJ, j, k)
-!$omp do
+  !$omp parallel private(gradient, distance, distance2, weight, deltaIJ, pIJ, j, k)
+  !$omp do
   do i = 1, NumberOfParticle
     if (ParticleType(i) .ne. PARTICLE_FLUID) cycle
     gradient = 0d0
@@ -246,8 +248,8 @@ subroutine calcPressureGradient()
       Acc(i, k) = -1d0*gradient(k)/FLUID_DENSITY
     enddo
   enddo
-!$omp end do
-!$omp end parallel
+  !$omp end do
+  !$omp end parallel
 
 end
 
@@ -257,16 +259,16 @@ subroutine moveParticleImplicit()
   implicit none
   integer :: i, j
 
-!$omp parallel private(j)
-!$omp do
+  !$omp parallel private(j)
+  !$omp do
   do i = 1, NumberOfParticle
-    do j = 1, numDimension
-      Vel(i, j) = Vel(i, j) + Acc(i, j)*dt
-      Pos(i, j) = Pos(i, j) + Acc(i, j)*dt**2
-    enddo
+  do j = 1, numDimension
+    Vel(i, j) = Vel(i, j) + Acc(i, j)*dt
+    Pos(i, j) = Pos(i, j) + Acc(i, j)*dt**2
   enddo
-!$omp end do
-!$omp end parallel
+  enddo
+  !$omp end do
+  !$omp end parallel
   Acc = 0d0
 
 end

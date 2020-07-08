@@ -8,17 +8,17 @@ subroutine calcGravity()
   integer :: i, j
 
   Acc = 0d0
-!$omp parallel private(j)
-!$omp do
+  !$omp parallel private(j)
+  !$omp do
   do i = 1, NumberOfParticle
-    if (ParticleType(i) == PARTICLE_FLUID) then
-      do j = 1, numDimension
-        Acc(i, j) = Gravity(j)
-      enddo
-    endif
+  if (ParticleType(i) == PARTICLE_FLUID) then
+    do j = 1, numDimension
+      Acc(i, j) = Gravity(j)
+    enddo
+  endif
   enddo
-!$omp end do
-!$omp end parallel
+  !$omp end do
+  !$omp end parallel
 
 end
 
@@ -35,28 +35,28 @@ subroutine calcViscosity()
 
   m = 2d0*numDimension/(N0_forLaplacian*Lambda)*KINEMATIC_VISCOSITY
 
-!$omp parallel private(ViscosityTerm, distance, weight, j, k)
-!$omp do
+  !$omp parallel private(ViscosityTerm, distance, weight, j, k)
+  !$omp do
   do i = 1, NumberOfParticle
-    if (ParticleType(i) == PARTICLE_FLUID) then
-      ViscosityTerm = 0d0
-      do j = 1, NumberOfParticle
-        if (i == j) cycle
-        distance = calcDistance(i, j)
-        if (distance < Radius_forLaplacian) then
-          weight = calcWeight(distance, Radius_forLaplacian)
-          do k = 1, numDimension
-            ViscosityTerm(k) = ViscosityTerm(k) + (Vel(j, k) - Vel(i, k))*weight
-          enddo
-        endif
-      enddo
-      do k = 1, numDimension
-        Acc(i, k) = Acc(i, k) + ViscosityTerm(k)*m
-      enddo
-    endif
+  if (ParticleType(i) == PARTICLE_FLUID) then
+    ViscosityTerm = 0d0
+    do j = 1, NumberOfParticle
+      if (i == j) cycle
+      distance = calcDistance(i, j)
+      if (distance < Radius_forLaplacian) then
+        weight = calcWeight(distance, Radius_forLaplacian)
+        do k = 1, numDimension
+          ViscosityTerm(k) = ViscosityTerm(k) + (Vel(j, k) - Vel(i, k))*weight
+        enddo
+      endif
+    enddo
+    do k = 1, numDimension
+      Acc(i, k) = Acc(i, k) + ViscosityTerm(k)*m
+    enddo
+  endif
   enddo
-!$omp end do
-!$omp end parallel
+  !$omp end do
+  !$omp end parallel
 
 end
 
@@ -66,16 +66,16 @@ subroutine moveParticleExplicit()
   implicit none
   integer :: i, j
 
-!$omp parallel private(j)
-!$omp do
+  !$omp parallel private(j)
+  !$omp do
   do i = 1, NumberOfParticle
-    do j = 1, numDimension
-      Vel(i, j) = Vel(i, j) + Acc(i, j)*dt
-      Pos(i, j) = Pos(i, j) + Vel(i, j)*dt
-    enddo
+  do j = 1, numDimension
+    Vel(i, j) = Vel(i, j) + Acc(i, j)*dt
+    Pos(i, j) = Pos(i, j) + Vel(i, j)*dt
   enddo
-!$omp end do
-!$omp end parallel
+  enddo
+  !$omp end do
+  !$omp end parallel
   Acc = 0d0
 
 end
@@ -101,16 +101,16 @@ subroutine collision()
       do k = 1, numDimension
         deltaIJ(k) = Pos(j, k) - Pos(i, k)
       enddo
-      distance = sqrt(sum(deltaIJ))
+      distance = calcDistance(i, j)
       if (distance < collisionDistance) then
-        impulse = 0d0
-        do k = 1, numDimension
-          impulse = impulse + (Vel(i, k) - Vel(j, k))*deltaIJ(k)/distance
-        enddo
+        impulse = (Vel(i, 1) - Vel(j, 1))*deltaIJ(1)/distance + &
+                  (Vel(i, 2) - Vel(j, 2))*deltaIJ(2)/distance
         if (impulse > 0d0) then
-          impulse = impulse*(1 + e)/2
+          write (*, *) impulse
+          impulse = impulse*((1 + e)*FLUID_DENSITY)/2
           do k = 1, numDimension
-            VelocityAfterCollision(i, k) = VelocityAfterCollision(i, k) - impulse*deltaIJ(k)/distance
+            VelocityAfterCollision(i, k) = VelocityAfterCollision(i, k) - &
+                                           (impulse/FLUID_DENSITY)*(deltaIJ(k)/distance)
           enddo
         endif
       endif
