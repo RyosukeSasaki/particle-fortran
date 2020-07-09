@@ -1,15 +1,14 @@
 program main
   use consts_variables
   implicit none
-  integer, parameter :: interval = 1
-  integer :: i, j, k
-  character :: filename*128
-  call omp_set_num_threads(8)
+  integer, parameter :: interval = 10
+  integer :: i, j
+  !call omp_set_num_threads(8)
 
   dt = 0.001
   call InitParticles()
   call calcConsts()
-  do i = 1, 2000
+  do i = 1, 4000
   do j = 1, interval
     call calcGravity()
     call calcViscosity()
@@ -26,6 +25,17 @@ program main
     call moveParticleImplicit()
   enddo
   write (*, *) "Timestep: ", i*interval
+  call output(i)
+  enddo
+
+end
+
+subroutine output(i)
+  use consts_variables
+  implicit none
+  integer :: i, k
+  character :: filename*128
+
   write (filename, '("data/data", i4.4, ".dat")') i
   open (11, file=filename, status='replace')
   do k = 1, NumberOfParticle
@@ -41,6 +51,5 @@ program main
     write (11, *)
   enddo
   close (11)
-  enddo
 
 end

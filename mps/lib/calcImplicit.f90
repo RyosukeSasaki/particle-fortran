@@ -33,7 +33,7 @@ subroutine setBoundaryCondition()
   do i = 1, NumberOfParticle
   if (ParticleType(i) == PARTICLE_DUMMY) then
     BoundaryCondition(i) = BOUNDARY_DUMMY
-  elseif (NumberDensity(i) < THRESHOLD_RATIO_BETA*N0_forNumberDensity) then
+  elseif (NumberDensity(i) < (THRESHOLD_RATIO_BETA*N0_forNumberDensity)) then
     BoundaryCondition(i) = BOUNDARY_SURFACE
   else
     BoundaryCondition(i) = BOUNDARY_INNER
@@ -56,11 +56,10 @@ subroutine setSourceTerm()
   !$omp do
   do i = 1, NumberOfParticle
     if (ParticleType(i) == PARTICLE_DUMMY) cycle
+    if (BoundaryCondition(i) == BOUNDARY_SURFACE) cycle
     if (BoundaryCondition(i) == BOUNDARY_INNER) then
       SourceTerm(i) = RELAXATION_COEF_FOR_PRESSURE*(1d0/dt**2)* &
                       (NumberDensity(i) - N0_forNumberDensity)/N0_forNumberDensity
-    elseif (BoundaryCondition(i) == BOUNDARY_SURFACE) then
-      SourceTerm(i) = 0d0
     endif
   enddo
   !$omp end do
@@ -109,9 +108,13 @@ subroutine GaussEliminateMethod()
     do j = i + 1, NumberOfParticle
       if (BoundaryCondition(j) == BOUNDARY_DUMMY) cycle
       c = CoefficientMatrix(j, i)/CoefficientMatrix(i, i)
+      !$omp parallel
+      !$omp do
       do k = i + 1, NumberOfParticle
         CoefficientMatrix(j, k) = CoefficientMatrix(j, k) - c*CoefficientMatrix(i, k)
       enddo
+      !$omp end do
+      !$omp end parallel
       SourceTerm(j) = SourceTerm(j) - c*SourceTerm(i)
     enddo
   enddo
@@ -179,9 +182,14 @@ subroutine removeNegativePressure()
   implicit none
   integer ::i
 
+  !$omp parallel
+  !$omp do
   do i = 1, NumberOfParticle
-    Pressure(i) = Max(Pressure(i), 0d0)
+    if (Pressure(i) < 0d0) Pressure(i) = 0d0
+    !if (Pressure(i) > 30000d0) Pressure(i) = 30000d0
   enddo
+  !$omp end do
+  !$omp end parallel
 
 end
 
@@ -196,6 +204,8 @@ subroutine setMinPressure()
   do i = 1, NumberOfParticle
     if (ParticleType(i) == PARTICLE_DUMMY) cycle
     MinPressure(i) = Pressure(i)
+    !$omp parallel
+    !$omp do
     do j = 1, NumberOfParticle
       if (ParticleType(j) == PARTICLE_DUMMY) cycle
       if (i == j) cycle
@@ -205,6 +215,8 @@ subroutine setMinPressure()
         MinPressure(i) = Pressure(j)
       endif
     enddo
+    !$omp end do
+    !$omp end parallel
   enddo
 
 end

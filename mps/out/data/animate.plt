@@ -4,11 +4,11 @@ set output 'animation.gif'
 #set palette model RGB defined (0 "red", 1 "blue", 2 "green")
 #set palette model RGB functions 0,0,gray
 set palette defined (0.0 "blue",\
-                     1.0 "purple")
+                     1.0 "red")
 set xrange [-0.2:1.2]
 set yrange [-0.2:0.8]
-set cbrange [0:6000]
-do for[i=1:2000:1]{
+set cbrange [0:10000]
+do for[i=2010:2050:1]{
   filename = sprintf('data%04d.dat',i)
   plot_title = sprintf('timestep=%d', i)
   set title plot_title

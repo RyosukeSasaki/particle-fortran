@@ -9,6 +9,7 @@ FILES=../lib/consts_variables.f90\
 
 main: $(FILES)
 	gfortran -fopenmp $(FILES) -o main.o
+	#gfortran $(FILES) -o main.o
 
 clean:
 	rm *.o

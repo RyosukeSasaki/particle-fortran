@@ -10,7 +10,7 @@ module consts_variables
   real*8, parameter :: RELAXATION_COEF_FOR_PRESSURE = 0.2
   !圧縮率(Pa^(-1))
   real*8, parameter :: COMPRESSIBILITY = 0.45e-9
-  real*8, parameter :: IMPACT_PARAMETER = 1d0
+  real*8, parameter :: IMPACT_PARAMETER = 1.0
   integer, parameter :: MaxNumberOfParticle = 5000
   integer, parameter :: numDimension = 2
 

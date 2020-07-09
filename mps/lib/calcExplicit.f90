@@ -89,42 +89,51 @@ subroutine collision()
   real*8 :: calcDistance
   real*8 :: impulse
   real*8 :: VelocityAfterCollision(NumberOfParticle, numDimension)
-  real*8 :: deltaIJ(numDimension)
-  integer :: i, j, k
+  real*8 :: velocity_ix, velocity_iy
+  real*8 :: xij, yij
+  real*8 :: mi, mj
+  integer :: i, j
 
   CollisionState = .false.
   VelocityAfterCollision = Vel
   do i = 1, NumberOfParticle
     if (ParticleType(i) .ne. PARTICLE_FLUID) cycle
+    mi = FLUID_DENSITY
+    velocity_ix = Vel(i, 1)
+    velocity_iy = Vel(i, 2)
     do j = 1, NumberOfParticle
       if (ParticleType(j) == PARTICLE_DUMMY) cycle
       if (i == j) cycle
-      do k = 1, numDimension
-        deltaIJ(k) = Pos(j, k) - Pos(i, k)
-      enddo
+      xij = Pos(j, 1) - Pos(i, 1)
+      yij = Pos(j, 2) - Pos(i, 2)
       distance = calcDistance(i, j)
       if (distance < collisionDistance) then
-        impulse = (Vel(i, 1) - Vel(j, 1))*deltaIJ(1)/distance + &
-                  (Vel(i, 2) - Vel(j, 2))*deltaIJ(2)/distance
+        impulse = (velocity_ix - Vel(j, 1))*(xij/distance) + &
+                  (velocity_iy - Vel(j, 2))*(yij/distance)
         if (impulse > 0d0) then
           CollisionState(i) = .true.
           CollisionState(j) = .true.
-          impulse = impulse*((1 + e)*FLUID_DENSITY)/2
-          do k = 1, numDimension
-            VelocityAfterCollision(i, k) = VelocityAfterCollision(i, k) - &
-                                           (impulse/FLUID_DENSITY)*(deltaIJ(k)/distance)
-          enddo
+          mj = FLUID_DENSITY
+          impulse = impulse*((1d0 + e)*mi*mj)/(mi + mj)
+          velocity_ix = velocity_ix - (impulse/mi)*(xij/distance)
+          velocity_iy = velocity_iy - (impulse/mi)*(yij/distance)
         endif
       endif
     enddo
+    VelocityAfterCollision(i, 1) = velocity_ix
+    VelocityAfterCollision(i, 2) = velocity_iy
   enddo
 
-  do i = i, NumberOfParticle
+  !$omp parallel
+  !$omp do
+  do i = 1, NumberOfParticle
     if (ParticleType(i) .ne. PARTICLE_FLUID) cycle
-    do j = 1, numDimension
-      Pos(i, j) = Pos(i, j) + (VelocityAfterCollision(i, j) - Vel(i, j))*dt
-      Vel(i, j) = VelocityAfterCollision(i, j)
-    enddo
+    Pos(i, 1) = Pos(i, 1) + (VelocityAfterCollision(i, 1) - Vel(i, 1))*dt
+    Pos(i, 2) = Pos(i, 2) + (VelocityAfterCollision(i, 2) - Vel(i, 2))*dt
+    Vel(i, 1) = VelocityAfterCollision(i, 1)
+    Vel(i, 2) = VelocityAfterCollision(i, 2)
   enddo
+  !$omp end do
+  !$omp end parallel
 
 end
