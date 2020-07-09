@@ -10,10 +10,10 @@ module consts_variables
   real*8, parameter :: RELAXATION_COEF_FOR_PRESSURE = 0.2
   !圧縮率(Pa^(-1))
   real*8, parameter :: COMPRESSIBILITY = 0.45e-9
-  real*8, parameter :: dt = 0.001
   integer, parameter :: MaxNumberOfParticle = 5000
   integer, parameter :: numDimension = 2
 
+  real*8 :: dt = 0.001
   real*8 :: Radius_forNumberDensity, Radius_forGradient, Radius_forLaplacian
   real*8 :: N0_forNumberDensity, N0_forGradient, N0_forLaplacian
   real*8 :: Lambda
