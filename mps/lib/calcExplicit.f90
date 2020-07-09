@@ -84,7 +84,7 @@ subroutine collision()
   use define
   use consts_variables
   implicit none
-  real*8, parameter :: e = 0.2
+  real*8 :: e = IMPACT_PARAMETER
   real*8 :: distance
   real*8 :: calcDistance
   real*8 :: impulse
@@ -92,6 +92,7 @@ subroutine collision()
   real*8 :: deltaIJ(numDimension)
   integer :: i, j, k
 
+  CollisionState = .false.
   VelocityAfterCollision = Vel
   do i = 1, NumberOfParticle
     if (ParticleType(i) .ne. PARTICLE_FLUID) cycle
@@ -106,7 +107,8 @@ subroutine collision()
         impulse = (Vel(i, 1) - Vel(j, 1))*deltaIJ(1)/distance + &
                   (Vel(i, 2) - Vel(j, 2))*deltaIJ(2)/distance
         if (impulse > 0d0) then
-          write (*, *) impulse
+          CollisionState(i) = .true.
+          CollisionState(j) = .true.
           impulse = impulse*((1 + e)*FLUID_DENSITY)/2
           do k = 1, numDimension
             VelocityAfterCollision(i, k) = VelocityAfterCollision(i, k) - &

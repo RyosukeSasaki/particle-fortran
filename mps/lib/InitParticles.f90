@@ -70,6 +70,7 @@ subroutine InitParticles()
   allocate (CoefficientMatrix(NumberOfParticle, NumberOfParticle))
   allocate (Pressure(NumberOfParticle))
   allocate (MinPressure(NumberOfParticle))
+  allocate (CollisionState(NumberOfParticle))
   Vel = 0d0
   Acc = 0d0
   Pressure = 0d0
