@@ -5,10 +5,11 @@ program main
   integer :: i, j
   !call omp_set_num_threads(8)
 
-  dt = 0.001
+  dt = 0.0005
   call InitParticles()
   call calcConsts()
-  do i = 1, 4000
+  call output(0)
+  do i = 1, 800
   do j = 1, interval
     call calcGravity()
     call calcViscosity()

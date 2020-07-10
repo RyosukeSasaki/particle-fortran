@@ -1,7 +1,7 @@
 module consts_variables
   implicit none
   !initial value of particle distance
-  real*8, parameter :: PARTICLE_DISTANCE = 0.025
+  real*8, parameter :: PARTICLE_DISTANCE = 0.020
   real*8, parameter :: FLUID_DENSITY = 1000
   real*8, parameter :: KINEMATIC_VISCOSITY = 1.0e-6
   !threshold of whether the particle is surface or inside
@@ -11,7 +11,7 @@ module consts_variables
   !圧縮率(Pa^(-1))
   real*8, parameter :: COMPRESSIBILITY = 0.45e-9
   real*8, parameter :: IMPACT_PARAMETER = 1.0
-  integer, parameter :: MaxNumberOfParticle = 5000
+  integer, parameter :: MaxNumberOfParticle = 500000
   integer, parameter :: numDimension = 2
 
   real*8 :: dt
