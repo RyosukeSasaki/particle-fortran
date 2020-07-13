@@ -5,11 +5,11 @@ program main
   integer :: i, j
   !call omp_set_num_threads(8)
 
-  dt = 0.0005
+  dt = 0.001
   call InitParticles()
   call calcConsts()
   call output(0)
-  do i = 1, 800
+  do i = 1, 400
   do j = 1, interval
     call calcGravity()
     call calcViscosity()
@@ -37,7 +37,7 @@ subroutine output(i)
   integer :: i, k
   character :: filename*128
 
-  write (filename, '("data/data", i4.4, ".dat")') i
+  write (filename, '("data2/data", i4.4, ".dat")') i
   open (11, file=filename, status='replace')
   do k = 1, NumberOfParticle
     write (11, '(f6.3,X)', advance='no') Pos(k, 1)

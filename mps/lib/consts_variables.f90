@@ -1,7 +1,7 @@
 module consts_variables
   implicit none
   !initial value of particle distance
-  real*8, parameter :: PARTICLE_DISTANCE = 0.020
+  real*8, parameter :: PARTICLE_DISTANCE = 0.025
   real*8, parameter :: FLUID_DENSITY = 1000
   real*8, parameter :: KINEMATIC_VISCOSITY = 1.0e-6
   !threshold of whether the particle is surface or inside

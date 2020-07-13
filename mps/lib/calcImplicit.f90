@@ -249,7 +249,7 @@ subroutine calcPressureGradient()
       distance = sqrt(distance2)
       if (distance < Radius_forGradient) then
         weight = calcWeight(distance, Radius_forGradient)
-        pIJ = (Pressure(j) - MinPressure(i))/distance2
+        pIJ = (Pressure(j) - Pressure(i))/distance2
         do k = 1, numDimension
           gradient(k) = gradient(k) + deltaIJ(k)*pIJ*weight
         enddo
