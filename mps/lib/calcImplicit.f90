@@ -26,21 +26,42 @@ subroutine setBoundaryCondition()
   use define
   use consts_variables
   implicit none
-  integer :: i
-
+  integer :: i, j, HIGHEST_INDEX
+  real*8,parameter :: EPS = PARTICLE_DISTANCE * 0.01
+  real*8 :: HIGHEST
+  
   !$omp parallel
   !$omp do
   do i = 1, NumberOfParticle
-  if (ParticleType(i) == PARTICLE_DUMMY) then
-    BoundaryCondition(i) = BOUNDARY_DUMMY
-  elseif (NumberDensity(i) < (THRESHOLD_RATIO_BETA*N0_forNumberDensity)) then
-    BoundaryCondition(i) = BOUNDARY_SURFACE
-  else
-    BoundaryCondition(i) = BOUNDARY_INNER
-  endif
+    if (ParticleType(i) == PARTICLE_DUMMY) then
+      BoundaryCondition(i) = BOUNDARY_DUMMY
+    elseif (NumberDensity(i) < (THRESHOLD_RATIO_BETA*N0_forNumberDensity)) then
+      BoundaryCondition(i) = BOUNDARY_SURFACE_LOW
+    else
+      BoundaryCondition(i) = BOUNDARY_INNER
+    endif
   enddo
   !$omp end do
   !$omp end parallel
+  i = 1
+  do
+    if (PARTICLE_DISTANCE*dble(i) >= (sizeX + 4*PARTICLE_DISTANCE + EPS)) exit
+    HIGHEST = 0d0
+    HIGHEST_INDEX = 0
+    do j = 1, NumberOfParticle
+      if (BoundaryCondition(j) .ne. BOUNDARY_SURFACE_LOW) cycle
+      if ((Pos(j, 1) >  (PARTICLE_DISTANCE*(i-1) + EPS)) .and. (Pos(j, 1) <= (PARTICLE_DISTANCE*i + EPS))) then
+        if (Pos(j, 2) > HIGHEST) then
+          HIGHEST_INDEX = j
+          HIGHEST = Pos(j, 2)
+        endif
+      endif 
+    enddo
+    BoundaryCondition(HIGHEST_INDEX) = BOUNDARY_SURFACE_HIGH
+    !write(*,*) PARTICLE_DISTANCE*dble(i)
+    i = i + 1
+  enddo
+
 
 end
 
@@ -56,7 +77,8 @@ subroutine setSourceTerm()
   !$omp do
   do i = 1, NumberOfParticle
     if (ParticleType(i) == PARTICLE_DUMMY) cycle
-    if (BoundaryCondition(i) == BOUNDARY_SURFACE) cycle
+    if (BoundaryCondition(i) == BOUNDARY_SURFACE_LOW) cycle
+    if (BoundaryCondition(i) == BOUNDARY_SURFACE_HIGH) cycle
     if (BoundaryCondition(i) == BOUNDARY_INNER) then
       SourceTerm(i) = RELAXATION_COEF_FOR_PRESSURE*(1d0/dt**2)* &
                       (NumberDensity(i) - N0_forNumberDensity)/N0_forNumberDensity
@@ -123,16 +145,15 @@ subroutine GaussEliminateMethod()
   do
     i = i - 1
     if (i == 0) exit
-    if (BoundaryCondition(i) .ne. BOUNDARY_INNER) cycle
-    Terms = 0d0
-    !$omp parallel
-    !$omp do reduction(+:Terms)
-    do j = i + 1, NumberOfParticle
-      Terms = Terms + CoefficientMatrix(i, j)*Pressure(j)
-    enddo
-    !$omp end do
-    !$omp end parallel
-    Pressure(i) = (SourceTerm(i) - Terms)/CoefficientMatrix(i, i)
+    if (BoundaryCondition(i) == BOUNDARY_INNER) then
+      Terms = 0d0
+      do j = i + 1, NumberOfParticle
+        Terms = Terms + CoefficientMatrix(i, j)*Pressure(j)
+      enddo
+      Pressure(i) = (SourceTerm(i) - Terms)/CoefficientMatrix(i, i)
+    else if (BoundaryCondition(i) == BOUNDARY_SURFACE_HIGH) then
+      Pressure(i) = 6000
+    endif
   enddo
 
 end

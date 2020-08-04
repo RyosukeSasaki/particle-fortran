@@ -9,46 +9,72 @@ subroutine InitParticles()
   integer :: nX, nY
   integer :: i = 1
   logical :: flagOfParticleGenerarion
+  logical :: shift = .false.
 
   EPS = PARTICLE_DISTANCE*0.01
-  nX = int(1.0/PARTICLE_DISTANCE) + 5
-  nY = int(0.6/PARTICLE_DISTANCE) + 5
-  do iX = -4, nX
-    do iY = -4, nY
+  nX = int(sizeX/PARTICLE_DISTANCE) + 7
+  nY = int(sizeY/PARTICLE_DISTANCE) + 7
+  do iX = -6, nX
+    do iY = -6, nY
       x = PARTICLE_DISTANCE*dble(iX)
-      y = PARTICLE_DISTANCE*dble(iY)
+      if (shift .eqv. .true.) then
+        y = PARTICLE_DISTANCE*dble(iY)
+      else
+        y = PARTICLE_DISTANCE*(dble(iY)+0.5)
+      endif
       flagOfParticleGenerarion = .false.
 
       !dummy particle
-      if (((x > -4*PARTICLE_DISTANCE + EPS) .and. (x <= 1d0 + 4*PARTICLE_DISTANCE + EPS)) &
-          .and. ((y > 0d0 - 4*PARTICLE_DISTANCE + EPS) .and. (y <= 0.6 + EPS))) then
+      if (((x > -6*PARTICLE_DISTANCE + EPS) .and. (x <= sizeX + 6*PARTICLE_DISTANCE + EPS)) &
+          .and. ((y > 0d0 - 0*PARTICLE_DISTANCE + EPS) .and. (y <= sizeY + EPS))) then
         ParticleType(i) = PARTICLE_DUMMY
         flagOfParticleGenerarion = .true.
       endif
 
       !wall particle
-      if (((x > -2*PARTICLE_DISTANCE + EPS) .and. (x <= 1d0 + 2*PARTICLE_DISTANCE + EPS)) &
-          .and. ((y > 0d0 - 2*PARTICLE_DISTANCE + EPS) .and. (y <= 0.6 + EPS))) then
+      if (((x > -3*PARTICLE_DISTANCE + EPS) .and. (x <= sizeX + 3*PARTICLE_DISTANCE + EPS)) &
+          .and. ((y > 0d0 - 0*PARTICLE_DISTANCE + EPS) .and. (y <= sizeY + EPS))) then
         ParticleType(i) = PARTICLE_WALL
         flagOfParticleGenerarion = .true.
       endif
 
       !wall particle
-      if (((x > -4*PARTICLE_DISTANCE + EPS) .and. (x <= 1d0 + 4*PARTICLE_DISTANCE + EPS)) &
-          .and. ((y > 0.6 - 2*PARTICLE_DISTANCE + EPS) .and. (y <= 0.6 + EPS))) then
+      if (((x > -6*PARTICLE_DISTANCE + EPS) .and. (x <= sizeX + 6*PARTICLE_DISTANCE + EPS)) &
+          .and. ((y > 0 - 3*PARTICLE_DISTANCE + EPS) .and. (y <= 0 + EPS))) then
         ParticleType(i) = PARTICLE_WALL
         flagOfParticleGenerarion = .true.
       endif
 
       !empty region
-      if (((x > 0d0 + EPS) .and. (x <= 1d0 + EPS)) .and. (y > 0d0 + EPS)) then
+      if (((x > 0d0 + EPS) .and. (x <= sizeX + EPS)) .and. (y > -20d0 + EPS)) then
         flagOfParticleGenerarion = .false.
       endif
 
+      !generate position and velocity
+      if (flagOfParticleGenerarion .eqv. .true.) then
+        Pos(i, 1) = x; Pos(i, 2) = y
+        i = i + 1
+      endif
+      
+    enddo
+    if (shift .eqv. .true.) then
+      shift = .false.
+    else
+      shift = .true.
+    endif
+  enddo
+
+  do iX = -6, nX
+    do iY = -6, nY
+      x = PARTICLE_DISTANCE*dble(iX)
+      y = PARTICLE_DISTANCE*dble(iY)
+      flagOfParticleGenerarion = .false.
+
       !fluid particle
-      if (((x > 0d0 + EPS) .and. (x <= 0.25 + EPS)) .and. ((y > 0d0 + EPS) .and. (y <= 0.5 + EPS))) then
+      if (((x > 0d0 + EPS) .and. (x <= sizeX + EPS)) .and. ((y > 0d0 + EPS) .and. (y <= 0.1 + EPS))) then
         ParticleType(i) = PARTICLE_FLUID
         flagOfParticleGenerarion = .true.
+        numFluid = numFluid + 1
       endif
 
       !generate position and velocity

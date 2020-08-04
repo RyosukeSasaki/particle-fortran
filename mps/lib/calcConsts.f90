@@ -3,10 +3,9 @@ subroutine calcConsts()
   use consts_variables
   implicit none
 
-  Radius_forNumberDensity = 2.1*PARTICLE_DISTANCE
-  Radius_forGradient = 2.1*PARTICLE_DISTANCE
+  Radius_forNumberDensity = 6.1*PARTICLE_DISTANCE
+  Radius_forGradient = 3.1*PARTICLE_DISTANCE
   Radius_forLaplacian = 3.1*PARTICLE_DISTANCE
-  collisionDistance = 0.5*PARTICLE_DISTANCE
 
   call calcNZeroLambda()
 
