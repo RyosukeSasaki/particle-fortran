@@ -35,6 +35,7 @@ subroutine output(i)
   use consts_variables
   implicit none
   integer :: i, k
+  real*8 :: detach, force
   character :: filename*128
 
   write (filename, '("data3/data", i4.4, ".dat")') i
@@ -53,5 +54,24 @@ subroutine output(i)
     write (11, *)
   enddo
   close (11)
+
+end
+
+real*8 function detach()
+  use consts_variables
+  integer :: i
+  real*8 :: VelocitySum
+
+  VelocitySum = 0d0
+  do i = 1, NumberOfParticle
+    if (Pos(i, 2) < -0.01d0) then
+      if (detachState(i) .eqv. .false.) then
+        !write (*,*) Pos(i, 2)
+        VelocitySum = VelocitySum + Vel(i, 2)
+        detachState(i) = .true.
+      endif
+    endif
+  enddo
+  detach = VelocitySum*MassOfParticle
 
 end

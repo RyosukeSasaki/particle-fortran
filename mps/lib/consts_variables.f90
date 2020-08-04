@@ -21,8 +21,8 @@ module consts_variables
   real*8 :: N0_forNumberDensity, N0_forGradient, N0_forLaplacian
   real*8 :: Lambda
   real*8 :: collisionDistance = 0.8*PARTICLE_DISTANCE
-  integer :: numFluid = 0
-
+  real*8 :: MassOfParticle
+  
   real*8 :: Pos(MaxNumberOfParticle, numDimension)
   real*8 :: Gravity(numDimension)
   ! 0:Fluid, 1:Wall, 2:Dummy
@@ -37,7 +37,9 @@ module consts_variables
   real*8, allocatable :: SourceTerm(:)
   real*8, allocatable :: CoefficientMatrix(:, :)
   logical, allocatable :: CollisionState(:)
-
+  logical, allocatable :: detachState(:)
+  
   integer :: NumberOfParticle
+  integer :: NumberOfFluid = 0
 
 end

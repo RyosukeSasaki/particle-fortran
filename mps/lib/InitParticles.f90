@@ -74,7 +74,7 @@ subroutine InitParticles()
       if (((x > 0d0 + EPS) .and. (x <= sizeX + EPS)) .and. ((y > 0d0 + EPS) .and. (y <= 0.1 + EPS))) then
         ParticleType(i) = PARTICLE_FLUID
         flagOfParticleGenerarion = .true.
-        numFluid = numFluid + 1
+        NumberOfFluid = NumberOfFluid + 1
       endif
 
       !generate position and velocity
@@ -97,9 +97,12 @@ subroutine InitParticles()
   allocate (Pressure(NumberOfParticle))
   allocate (MinPressure(NumberOfParticle))
   allocate (CollisionState(NumberOfParticle))
+  allocate (detachState(NumberOfParticle))
+  detachState = .false.
   Vel = 0d0
   Acc = 0d0
   Pressure = 0d0
+  MassOfParticle = FLUID_DENSITY*sizeX*sizeY/NumberOfFluid
 
   return
 
