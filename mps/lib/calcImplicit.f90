@@ -152,7 +152,7 @@ subroutine GaussEliminateMethod()
       enddo
       Pressure(i) = (SourceTerm(i) - Terms)/CoefficientMatrix(i, i)
     else if (BoundaryCondition(i) == BOUNDARY_SURFACE_HIGH) then
-      Pressure(i) = 6000
+      Pressure(i) = WaterPressure
     endif
   enddo
 

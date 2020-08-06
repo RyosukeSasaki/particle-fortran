@@ -7,7 +7,7 @@ subroutine InitParticles()
   real*8 :: EPS
   integer :: iX, iY
   integer :: nX, nY
-  integer :: i = 1
+  integer :: i = 0
   logical :: flagOfParticleGenerarion
   logical :: shift = .false.
 
@@ -64,6 +64,7 @@ subroutine InitParticles()
     endif
   enddo
 
+  NumberOfFluid = 0
   do iX = -6, nX
     do iY = -6, nY
       x = PARTICLE_DISTANCE*dble(iX)
@@ -71,7 +72,7 @@ subroutine InitParticles()
       flagOfParticleGenerarion = .false.
 
       !fluid particle
-      if (((x > 0d0 + EPS) .and. (x <= sizeX + EPS)) .and. ((y > 0d0 + EPS) .and. (y <= 0.1 + EPS))) then
+      if (((x > 0d0 + EPS) .and. (x <= WsizeX + EPS)) .and. ((y > 0d0 + EPS) .and. (y <= WsizeY + EPS))) then
         ParticleType(i) = PARTICLE_FLUID
         flagOfParticleGenerarion = .true.
         NumberOfFluid = NumberOfFluid + 1
@@ -86,7 +87,7 @@ subroutine InitParticles()
     enddo
   enddo
 
-  NumberOfParticle = i - 1
+  NumberOfParticle = i
   !allocate memory for particle quantities
   allocate (Vel(NumberOfParticle, numDimension))
   allocate (Acc(NumberOfParticle, numDimension))
@@ -102,7 +103,7 @@ subroutine InitParticles()
   Vel = 0d0
   Acc = 0d0
   Pressure = 0d0
-  MassOfParticle = FLUID_DENSITY*sizeX*sizeY/NumberOfFluid
+  MassOfParticle = FLUID_DENSITY*WsizeX*WsizeY*WsizeZ/NumberOfFluid
 
   return
 

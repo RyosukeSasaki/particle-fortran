@@ -1,0 +1,7 @@
+ dt:    2.0000000000000001E-004
+ Particle radius:    9.9999997764825821E-003
+ Fluid density:    1000.0000000000000     
+ Water Size:   0.10000000000000001       *   0.10000000000000001       *   0.10000000000000001     
+ Number of Paricle:          616
+ Number of Fluid:          100
+ Mass of Fluid Paricle:    1.0000000000000000E-002
