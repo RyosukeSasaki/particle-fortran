@@ -10,7 +10,7 @@ program main
   dir = "data05"
   filename = dir // "/thurust.dat"
 
-  open (19, file=filename, status='new')
+  open (19, file=filename, status='replace')
 
   call InitParticles()
   call calcConsts()
@@ -50,7 +50,7 @@ subroutine output(i)
 
   write (filename, '("/data", i4.4, ".dat")') i
   filename = dir // filename
-  open (11, file=filename, status='new')
+  open (11, file=filename, status='replace')
   do k = 1, NumberOfParticle
     write (11, '(f6.3,X)', advance='no') Pos(k, 1)
     write (11, '(f6.3,X)', advance='no') Pos(k, 2)
@@ -73,7 +73,7 @@ subroutine writeInit()
   character :: filename*128
 
   filename = dir // "/init.txt"
-  open (18, file=filename, status='new')
+  open (18, file=filename, status='replace')
   write (18, *) "dt: ", dt
   write (18, *) "Particle radius: ", PARTICLE_DISTANCE
   write (18, *) "Fluid density: ", FLUID_DENSITY
