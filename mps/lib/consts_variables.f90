@@ -14,7 +14,10 @@ module consts_variables
   integer, parameter :: MaxNumberOfParticle = 500000
   integer, parameter :: numDimension = 2
 
-  real*8,parameter :: sizeX = 0.1d0, sizeY = 0.2d0
+  !筒の大きさ
+  real*8, parameter :: sizeX = 0.1d0, sizeY = 0.4d0
+  !水領域の大きさ
+  real*8, parameter :: WsizeX = 0.1d0, WsizeY = 0.1d0, WsizeZ = 0.1d0
 
   real*8 :: dt
   real*8 :: Radius_forNumberDensity, Radius_forGradient, Radius_forLaplacian
@@ -40,6 +43,6 @@ module consts_variables
   logical, allocatable :: detachState(:)
   
   integer :: NumberOfParticle
-  integer :: NumberOfFluid = 0
+  integer :: NumberOfFluid
 
 end
