@@ -6,10 +6,13 @@ program main
   !call omp_set_num_threads(8)
 
   dt = 0.0002d0
+
+  open (19, file="data3/thrust.dat", status='replace')
+
   call InitParticles()
   call calcConsts()
   call output(0)
-  do i = 1, 300
+  do i = 1, 10
   do j = 1, interval
     call calcGravity()
     call calcViscosity()
@@ -24,10 +27,13 @@ program main
     call setMinPressure()
     call calcPressureGradient()
     call moveParticleImplicit()
+    call detach(i*interval+j)
   enddo
   write (*, *) "Timestep: ", i*interval
   call output(i)
   enddo
+
+  close (19)
 
 end
 
@@ -35,7 +41,6 @@ subroutine output(i)
   use consts_variables
   implicit none
   integer :: i, k
-  real*8 :: detach, force
   character :: filename*128
 
   write (filename, '("data3/data", i4.4, ".dat")') i
@@ -57,21 +62,23 @@ subroutine output(i)
 
 end
 
-real*8 function detach()
+subroutine detach(i)
   use consts_variables
-  integer :: i
+  implicit none
+  integer :: i,j
   real*8 :: VelocitySum
 
   VelocitySum = 0d0
-  do i = 1, NumberOfParticle
-    if (Pos(i, 2) < -0.01d0) then
-      if (detachState(i) .eqv. .false.) then
-        !write (*,*) Pos(i, 2)
-        VelocitySum = VelocitySum + Vel(i, 2)
-        detachState(i) = .true.
+  do j = 1, NumberOfParticle
+    if (Pos(j, 2) < -0.01d0) then
+      if (detachState(j) .eqv. .false.) then
+        VelocitySum = VelocitySum + Vel(j, 2)
+        detachState(j) = .true.
       endif
     endif
   enddo
-  detach = VelocitySum*MassOfParticle
+  write (19, '(f6.4,X)', advance='no') i*dt
+  write (19, '(f15.10,X)', advance='no') VelocitySum*MassOfParticle
+  write (19, *)
 
 end
