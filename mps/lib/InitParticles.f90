@@ -7,7 +7,7 @@ subroutine InitParticles()
   real*8 :: EPS
   integer :: iX, iY
   integer :: nX, nY
-  integer :: i = 0
+  integer :: i = 1
   logical :: flagOfParticleGenerarion
   logical :: shift = .false.
 
@@ -87,7 +87,7 @@ subroutine InitParticles()
     enddo
   enddo
 
-  NumberOfParticle = i
+  NumberOfParticle = i - 1
   !allocate memory for particle quantities
   allocate (Vel(NumberOfParticle, numDimension))
   allocate (Acc(NumberOfParticle, numDimension))

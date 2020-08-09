@@ -1,7 +1,7 @@
 module consts_variables
   implicit none
   !initial value of particle distance
-  real*8, parameter :: PARTICLE_DISTANCE = 0.0025
+  real*8, parameter :: PARTICLE_DISTANCE = 0.005
   real*8, parameter :: FLUID_DENSITY = 1000
   real*8, parameter :: KINEMATIC_VISCOSITY = 1.0e-6
   !threshold of whether the particle is surface or inside
@@ -16,22 +16,22 @@ module consts_variables
 
   !筒の大きさ
   real*8, parameter :: sizeX = 0.1d0, sizeY = 0.4d0
-  !水領域の大きさ
-  real*8, parameter :: WsizeX = 0.1d0, WsizeY = 0.1d0, WsizeZ = 0.1d0
-  real*8, parameter :: WaterPressure = 4000
-
-  real*8 :: dt
+  
   real*8 :: Radius_forNumberDensity, Radius_forGradient, Radius_forLaplacian
   real*8 :: N0_forNumberDensity, N0_forGradient, N0_forLaplacian
   real*8 :: Lambda
   real*8 :: collisionDistance = 0.8*PARTICLE_DISTANCE
   real*8 :: MassOfParticle
   real*8 :: deltaV = 0
-
+  
   integer :: NumberOfParticle
   integer :: NumberOfFluid
-
-  character :: dir*6
+  
+  real*8 :: dt = 0.0002d0
+  character :: dir*6 = "data08"
+  real*8, parameter :: WaterPressure = 3000
+  !水領域の大きさ
+  real*8, parameter :: WsizeX = 0.1d0, WsizeY = 0.1d0, WsizeZ = 0.1d0
   
   real*8 :: Pos(MaxNumberOfParticle, numDimension)
   real*8 :: Gravity(numDimension)

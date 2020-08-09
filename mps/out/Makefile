@@ -7,9 +7,15 @@ FILES=../lib/consts_variables.f90\
 			../lib/calcConsts.f90\
 			../main.f90
 
+n=main
+
 main: $(FILES)
-	gfortran -fopenmp $(FILES) -o main.o
+	gfortran -fopenmp $(FILES) -o $(n).o
 	#gfortran $(FILES) -o main.o
+
+run: $(FILES)
+	gfortran -fopenmp $(FILES) -o $(n).o
+	./$(n).o
 
 clean:
 	rm *.o
