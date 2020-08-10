@@ -1,9 +1,9 @@
-set term gif enhanced animate delay 2 optimize size 720,1280
-set output 'animation.gif'
+#set term gif enhanced animate delay 2 optimize size 720,1280
+#set output 'animation.gif'
 #set terminal postscript eps enhanced size 720,1280 color "GothicBBB-Medium-UniJIS-UTF8-H"
 #set output 'init.eps'
-#set term png size 720,1280
-#set output "init.png"
+set term png size 720,1280
+set output "1_5.png"
 
 #set palette model RGB defined (0 "red", 1 "blue", 2 "green")
 #set palette model RGB functions 0,0,gray
@@ -17,7 +17,7 @@ fluid_size = 0.7
 set xrange [-0.05:0.15]
 set yrange [-0.25:0.45]
 set cbrange [0:6000]
-do for[i=0:2400:1]{
+do for[i=550:550:1]{
   filename = sprintf('data%04d.dat',i)
   plot_title = sprintf('timestep=%d', i)
   set title plot_title
